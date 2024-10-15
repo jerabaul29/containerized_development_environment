@@ -1,0 +1,13 @@
+## Useful commands reminder
+
+- build
+
+`podman build -t helix:latest .`
+
+- run interactively:
+
+`podman run -ti --name helix_test localhost/helix:latest /bin/bash`
+
+- prune:
+
+`podman container prune`

@@ -1,0 +1,14 @@
+FROM ubuntu:24.04
+
+RUN apt-get update && apt-get install -y \
+    libfuse2t64 \
+    git \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /home/ubuntu/Software/helix
+
+RUN wget --https-only https://github.com/helix-editor/helix/releases/download/24.07/helix-24.07-x86_64.AppImage
+RUN chmod +x helix-24.07-x86_64.AppImage
+
+WORKDIR /home/ubuntu
