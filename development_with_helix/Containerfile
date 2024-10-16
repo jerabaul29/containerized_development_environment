@@ -12,4 +12,6 @@ RUN chmod +x helix-24.07-x86_64.AppImage
 # for some reason, appimages cannot be just run within podman containers - need to extract and then run the executable
 RUN ./helix-24.07-x86_64.AppImage --appimage-extract
 
-
+WORKDIR /home/ubuntu
+RUN echo 'alias hlx="/home/ubuntu/Software/helix/helix-24.07-x86_64.AppImage"' >> .bashrc
+-
