@@ -1,9 +1,22 @@
 FROM ubuntu:24.04
 
+USER root
+ENV TERM xterm-256color
+
 RUN apt-get update && apt-get install -y \
     libfuse2t64 \
     wget \
+    git \
     && rm -rf /var/lib/apt/lists/*
+
+USER ubuntu
+ENV TERM xterm-256color
+WORKDIR /home/ubuntu/Software/conda
+
+RUN wget --https-only https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+# this is hardcoded for now; retrieved from https://docs.anaconda.com/miniconda/
+RUN echo "33442cd3813df33dcbb4a932b938ee95398be98344dff4c30f7e757cd2110e4f Miniconda3-latest-Linux-x86_64.sh" | sha256sum --check
+RUN bash Miniconda3-latest-Linux-x86_64.sh -b -p /home/ubuntu/Software/conda/miniconda
 
 WORKDIR /home/ubuntu/Software/helix
 
@@ -13,5 +26,6 @@ RUN chmod +x helix-24.07-x86_64.AppImage
 RUN ./helix-24.07-x86_64.AppImage --appimage-extract
 
 WORKDIR /home/ubuntu
-RUN echo 'alias hlx="/home/ubuntu/Software/helix/helix-24.07-x86_64.AppImage"' >> .bashrc
--
+RUN echo 'alias hlx="/home/ubuntu/Software/helix/squashfs-root/AppRun"' >> .bashrc && echo 'source /home/ubuntu/Software/conda/miniconda/etc/profile.d/conda.sh' >> .bashrc
+
+CMD /bin/bash --init-file .bashrc
