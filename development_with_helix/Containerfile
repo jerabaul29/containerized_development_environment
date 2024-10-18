@@ -2,6 +2,7 @@ FROM ubuntu:24.04
 
 USER root
 ENV TERM xterm-256color
+ENV COLORTERM truecolor
 
 RUN apt-get update && apt-get install -y \
     libfuse2t64 \
@@ -11,6 +12,8 @@ RUN apt-get update && apt-get install -y \
 
 USER ubuntu
 ENV TERM xterm-256color
+ENV COLORTERM truecolor
+
 WORKDIR /home/ubuntu/Software/conda
 
 RUN wget --https-only https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
