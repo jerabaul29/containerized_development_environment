@@ -1,25 +1,43 @@
 FROM ubuntu:24.04
 
+# ------------------------------------------------------------
+# all root operations (apt install etc)
+
 USER root
+
+# make sure to use full true colors
 ENV TERM xterm-256color
 ENV COLORTERM truecolor
 
+# all sudo apt operations in one go; update cache, install, purge cache
 RUN apt-get update && apt-get install -y \
-    libfuse2t64 \
+    libfuse2t64 \  # needed for appimages and the like
     wget \
     git \
     && rm -rf /var/lib/apt/lists/*
 
+# ------------------------------------------------------------
+# all user level operations
+
 USER ubuntu
+
+# make sure to use full true colors
 ENV TERM xterm-256color
 ENV COLORTERM truecolor
+
+# ----------------------------------------
+# installation of conda
 
 WORKDIR /home/ubuntu/Software/conda
 
 RUN wget --https-only https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 # this is hardcoded for now; retrieved from https://docs.anaconda.com/miniconda/
+# TODO: find a programmatic way to retrieve the hash? or just update by hand when it breaks?
 RUN echo "33442cd3813df33dcbb4a932b938ee95398be98344dff4c30f7e757cd2110e4f Miniconda3-latest-Linux-x86_64.sh" | sha256sum --check
 RUN bash Miniconda3-latest-Linux-x86_64.sh -b -p /home/ubuntu/Software/conda/miniconda
+
+# ----------------------------------------
+# installation of helix
 
 WORKDIR /home/ubuntu/Software/helix
 
@@ -28,7 +46,25 @@ RUN chmod +x helix-24.07-x86_64.AppImage
 # for some reason, appimages cannot be just run within podman containers - need to extract and then run the executable
 RUN ./helix-24.07-x86_64.AppImage --appimage-extract
 
+# ----------------------------------------
+# TODO: clone the snippet and config repo, set it up
+# - config helix
+# - config command line
+# - config fzf
+# - config tmux
+# - config hj, fzf, ...
+
+# ----------------------------------------
+# setup of bashrc
+
 WORKDIR /home/ubuntu
 RUN echo 'alias hlx="/home/ubuntu/Software/helix/squashfs-root/AppRun"' >> .bashrc && echo 'source /home/ubuntu/Software/conda/miniconda/etc/profile.d/conda.sh' >> .bashrc
 
+# ----------------------------------------
+# TODO: prepare project folder, ready to mount
+
+# ----------------------------------------
+# default command is to get a shell with bashrc loaded
+
+# TODO: mount and start in the project folder by default
 CMD /bin/bash --init-file .bashrc
