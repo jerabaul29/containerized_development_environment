@@ -2,12 +2,16 @@
 
 - build
 
-`podman build -t helix:latest .`
+`podman build --build-arg GIT_HASH="$(git rev-parse HEAD)" -t helix:latest .`
 
 - run interactively:
 
-`podman run -ti --name helix_test localhost/helix:latest /bin/bash`
+`podman run -ti --rm --volume /home/kzm/Desktop/Current/TestsContainer:/home/ubuntu/host_mountpoint --name helix_test localhost/helix:latest`
 
 - prune:
 
 `podman container prune`
+
+- inspect:
+
+`podman inspect localhost/helix:latest | grep GIT`

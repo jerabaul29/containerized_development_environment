@@ -1,6 +1,21 @@
 FROM ubuntu:24.04
 
 # ------------------------------------------------------------
+# general metadata about the container
+
+# hard coded args
+LABEL author="J Rabault"
+LABEL ContainerfileLocation="https://github.com/jerabaul29/containerized_development_environment/tree/main/development_with_helix"
+LABEL kind="commandline_application"
+LABEL version="0.1"
+LABEL description="A container packing a full helix-based development environment."
+
+# automatically grabbed hash
+# require to build with flag `--build-arg GIT_HASH="$(git rev-parse HEAD)"`
+ARG GIT_HASH="0"
+LABEL GIT_HASH=$GIT_HASH
+
+# ------------------------------------------------------------
 # all root operations (apt install etc)
 
 USER root
@@ -11,9 +26,13 @@ ENV COLORTERM truecolor
 
 # all sudo apt operations in one go; update cache, install, purge cache
 RUN apt-get update && apt-get install -y \
-    libfuse2t64 \  # needed for appimages and the like
+    # needed to run appimage apps
+    libfuse2t64 \
     wget \
     git \
+    tmux \
+    htop \
+    tree \
     && rm -rf /var/lib/apt/lists/*
 
 # ------------------------------------------------------------
@@ -41,10 +60,21 @@ RUN bash Miniconda3-latest-Linux-x86_64.sh -b -p /home/ubuntu/Software/conda/min
 
 WORKDIR /home/ubuntu/Software/helix
 
-RUN wget --https-only https://github.com/helix-editor/helix/releases/download/24.07/helix-24.07-x86_64.AppImage
-RUN chmod +x helix-24.07-x86_64.AppImage
-# for some reason, appimages cannot be just run within podman containers - need to extract and then run the executable
-RUN ./helix-24.07-x86_64.AppImage --appimage-extract
+RUN wget --https-only https://github.com/helix-editor/helix/releases/download/24.07/helix-24.07-x86_64.AppImage && \
+    chmod +x helix-24.07-x86_64.AppImage && \
+    # for some reason, appimages cannot be just run within podman containers - need to extract and then run the executable
+    ./helix-24.07-x86_64.AppImage --appimage-extract
+
+# ----------------------------------------
+# cloning of relevant configurations and add ons
+
+WORKDIR /home/ubuntu/git
+RUN git clone https://github.com/jerabaul29/config_scripts_snippets.git --depth=1 && \
+    git clone https://github.com/gpakosz/.tmux.git /home/ubuntu/.tmux.git --depth=1 && \
+    git clone https://github.com/magicmonty/bash-git-prompt.git /home/ubuntu/.bash-git-prompt --depth=1
+
+# TODO: set up tmux conf, set up bash-git-prompt, set up helix config, set up hj, set up fzf, set up hg/hx, set up z, set up zg/zx, ga, etc
+
 
 # ----------------------------------------
 # TODO: clone the snippet and config repo, set it up
@@ -58,13 +88,21 @@ RUN ./helix-24.07-x86_64.AppImage --appimage-extract
 # setup of bashrc
 
 WORKDIR /home/ubuntu
-RUN echo 'alias hlx="/home/ubuntu/Software/helix/squashfs-root/AppRun"' >> .bashrc && echo 'source /home/ubuntu/Software/conda/miniconda/etc/profile.d/conda.sh' >> .bashrc
+RUN echo 'alias hlx="/home/ubuntu/Software/helix/squashfs-root/AppRun"' >> .bashrc && \
+    echo 'source /home/ubuntu/Software/conda/miniconda/etc/profile.d/conda.sh' >> .bashrc
 
 # ----------------------------------------
-# TODO: prepare project folder, ready to mount
+# prepare project folder, ready to mount
+
+WORKDIR /home/ubuntu/host_mountpoint
+# this has to be mounted by the container user, using the argument
+# `--volume PATH_ON_HOST:/home/ubuntu/host_mountpoint `
 
 # ----------------------------------------
 # default command is to get a shell with bashrc loaded
+# at the host mountpoint location, so this can start to
+# be edited
 
-# TODO: mount and start in the project folder by default
-CMD /bin/bash --init-file .bashrc
+CMD /bin/bash --init-file /home/ubuntu/.bashrc
+
+# TODO: run the correct instance of hj if relevant
