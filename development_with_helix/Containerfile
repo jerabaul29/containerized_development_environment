@@ -68,10 +68,21 @@ RUN wget --https-only https://github.com/helix-editor/helix/releases/download/24
 # ----------------------------------------
 # cloning of relevant configurations and add ons
 
-WORKDIR /home/ubuntu/git
-RUN git clone https://github.com/jerabaul29/config_scripts_snippets.git --depth=1 && \
-    git clone https://github.com/gpakosz/.tmux.git /home/ubuntu/.tmux.git --depth=1 && \
-    git clone https://github.com/magicmonty/bash-git-prompt.git /home/ubuntu/.bash-git-prompt --depth=1
+WORKDIR /home/ubuntu
+
+RUN \
+    # my configs
+    git clone https://github.com/jerabaul29/config_scripts_snippets.git --depth=1 && \
+    # TODO: put my hlx config in the right location
+    # install hj, zg, zx, hg, hx, etc
+    # install fzf
+    # nice tmux conf
+    git clone https://github.com/gpakosz/.tmux.git /home/ubuntu/.tmux --depth=1 && \
+    ln -s -f .tmux/.tmux.conf && \
+    cp config_scripts_snippets/configs/tmux/.tmux.conf.local . && \
+    # nice prompt also in git repos
+    git clone https://github.com/magicmonty/bash-git-prompt.git /home/ubuntu/.bash-git-prompt --depth=1 && \
+    echo "if [ -f "$HOME/.bash-git-prompt/gitprompt.sh" ]; then\nGIT_PROMPT_ONLY_IN_REPO=0\nGIT_PROMPT_THEME=Single_line_Dark\nsource $HOME/.bash-git-prompt/gitprompt.sh\nfi" >> .bashrc
 
 # TODO: set up tmux conf, set up bash-git-prompt, set up helix config, set up hj, set up fzf, set up hg/hx, set up z, set up zg/zx, ga, etc
 
@@ -106,3 +117,4 @@ WORKDIR /home/ubuntu/host_mountpoint
 CMD /bin/bash --init-file /home/ubuntu/.bashrc
 
 # TODO: run the correct instance of hj if relevant
+# TODO: check if the container is too old; if so, print a warning and request ENTER to proceed
