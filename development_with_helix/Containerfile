@@ -114,7 +114,12 @@ WORKDIR /home/ubuntu/host_mountpoint
 # at the host mountpoint location, so this can start to
 # be edited
 
-CMD /bin/bash --init-file /home/ubuntu/.bashrc
+ARG POSIX_TIMESTAMP_CREATION="0"
+LABEL POSIX_TIMESTAMP_CREATION=$POSIX_TIMESTAMP_CREATION
+ENV POSIX_TIMESTAMP_CREATION=$POSIX_TIMESTAMP_CREATION
 
-# TODO: run the correct instance of hj if relevant
+CMD /bin/bash -c 'if (( "$(date +%s)" > $((POSIX_TIMESTAMP_CREATION+604800)) )); then read -p "WARNING; the container is built for more than 7 days ago; consider re-building! press ENTER to continue"; fi' && \
+    /bin/bash --init-file /home/ubuntu/.bashrc
+
+# # TODO: run the correct instance of hj if relevant
 # TODO: check if the container is too old; if so, print a warning and request ENTER to proceed
