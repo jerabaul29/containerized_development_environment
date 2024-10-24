@@ -52,7 +52,7 @@ WORKDIR /home/ubuntu/Software/conda
 RUN wget --https-only https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 # this is hardcoded for now; retrieved from https://docs.anaconda.com/miniconda/
 # TODO: find a programmatic way to retrieve the hash? or just update by hand when it breaks?
-RUN echo "33442cd3813df33dcbb4a932b938ee95398be98344dff4c30f7e757cd2110e4f Miniconda3-latest-Linux-x86_64.sh" | sha256sum --check
+RUN echo "8d936ba600300e08eca3d874dee88c61c6f39303597b2b66baee54af4f7b4122 Miniconda3-latest-Linux-x86_64.sh" | sha256sum --check
 RUN bash Miniconda3-latest-Linux-x86_64.sh -b -p /home/ubuntu/Software/conda/miniconda
 
 # ----------------------------------------
@@ -121,5 +121,5 @@ ENV POSIX_TIMESTAMP_CREATION=$POSIX_TIMESTAMP_CREATION
 CMD /bin/bash -c 'if (( "$(date +%s)" > $((POSIX_TIMESTAMP_CREATION+604800)) )); then read -p "WARNING; the container is built for more than 7 days ago; consider re-building! press ENTER to continue"; fi' && \
     /bin/bash --init-file /home/ubuntu/.bashrc
 
-# # TODO: run the correct instance of hj if relevant
+# TODO: run the correct instance of hj if relevant
 # TODO: check if the container is too old; if so, print a warning and request ENTER to proceed
