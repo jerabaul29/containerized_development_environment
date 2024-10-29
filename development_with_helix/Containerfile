@@ -47,15 +47,10 @@ ENV COLORTERM truecolor
 # ----------------------------------------
 # installation of conda
 
-# TODO: change to: https://github.com/conda-forge/miniforge ; should be much faster
-
 WORKDIR /home/ubuntu/Software/conda
 
-RUN wget --https-only https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
-    # this is hardcoded for now; retrieved from https://docs.anaconda.com/miniconda/
-    # TODO: find a programmatic way to retrieve the hash? or just update by hand when it breaks?
-    echo "8d936ba600300e08eca3d874dee88c61c6f39303597b2b66baee54af4f7b4122 Miniconda3-latest-Linux-x86_64.sh" | sha256sum --check && \
-    bash Miniconda3-latest-Linux-x86_64.sh -b -p /home/ubuntu/Software/conda/miniconda
+RUN wget "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" && \
+    bash Miniforge3-$(uname)-$(uname -m).sh -b -p /home/ubuntu/Software/conda/miniconda
 
 # ----------------------------------------
 # installation of helix
@@ -117,4 +112,3 @@ CMD /bin/bash -c 'if (( "$(date +%s)" > $((POSIX_TIMESTAMP_CREATION+604800)) ));
     /bin/bash --init-file /home/ubuntu/.bashrc
 
 # TODO: run the correct instance of hj if relevant
-# TODO: check if the container is too old; if so, print a warning and request ENTER to proceed
