@@ -47,13 +47,15 @@ ENV COLORTERM truecolor
 # ----------------------------------------
 # installation of conda
 
+# TODO: change to: https://github.com/conda-forge/miniforge ; should be much faster
+
 WORKDIR /home/ubuntu/Software/conda
 
-RUN wget --https-only https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-# this is hardcoded for now; retrieved from https://docs.anaconda.com/miniconda/
-# TODO: find a programmatic way to retrieve the hash? or just update by hand when it breaks?
-RUN echo "8d936ba600300e08eca3d874dee88c61c6f39303597b2b66baee54af4f7b4122 Miniconda3-latest-Linux-x86_64.sh" | sha256sum --check
-RUN bash Miniconda3-latest-Linux-x86_64.sh -b -p /home/ubuntu/Software/conda/miniconda
+RUN wget --https-only https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
+    # this is hardcoded for now; retrieved from https://docs.anaconda.com/miniconda/
+    # TODO: find a programmatic way to retrieve the hash? or just update by hand when it breaks?
+    echo "8d936ba600300e08eca3d874dee88c61c6f39303597b2b66baee54af4f7b4122 Miniconda3-latest-Linux-x86_64.sh" | sha256sum --check && \
+    bash Miniconda3-latest-Linux-x86_64.sh -b -p /home/ubuntu/Software/conda/miniconda
 
 # ----------------------------------------
 # installation of helix
@@ -73,9 +75,12 @@ WORKDIR /home/ubuntu
 RUN \
     # my configs
     git clone https://github.com/jerabaul29/config_scripts_snippets.git --depth=1 && \
-    # TODO: put my hlx config in the right location
-    # install hj, zg, zx, hg, hx, etc
+    # set up helix config
+    mkdir -p /home/ubuntu/.config/helix/ && cp /home/ubuntu/config_scripts_snippets/configs/helix/config.toml /home/ubuntu/.config/helix/config.toml && \
+    # TODO: install hj, zg, zx, hg, hx, etc
     # install fzf
+    git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf && \
+    ~/.fzf/install && \
     # nice tmux conf
     git clone https://github.com/gpakosz/.tmux.git /home/ubuntu/.tmux --depth=1 && \
     ln -s -f .tmux/.tmux.conf && \
@@ -84,23 +89,13 @@ RUN \
     git clone https://github.com/magicmonty/bash-git-prompt.git /home/ubuntu/.bash-git-prompt --depth=1 && \
     echo "if [ -f "$HOME/.bash-git-prompt/gitprompt.sh" ]; then\nGIT_PROMPT_ONLY_IN_REPO=0\nGIT_PROMPT_THEME=Single_line_Dark\nsource $HOME/.bash-git-prompt/gitprompt.sh\nfi" >> .bashrc
 
-# TODO: set up tmux conf, set up bash-git-prompt, set up helix config, set up hj, set up fzf, set up hg/hx, set up z, set up zg/zx, ga, etc
-
-
-# ----------------------------------------
-# TODO: clone the snippet and config repo, set it up
-# - config helix
-# - config command line
-# - config fzf
-# - config tmux
-# - config hj, fzf, ...
-
 # ----------------------------------------
 # setup of bashrc
 
 WORKDIR /home/ubuntu
 RUN echo 'alias hlx="/home/ubuntu/Software/helix/squashfs-root/AppRun"' >> .bashrc && \
-    echo 'source /home/ubuntu/Software/conda/miniconda/etc/profile.d/conda.sh' >> .bashrc
+    echo 'source /home/ubuntu/Software/conda/miniconda/etc/profile.d/conda.sh' >> .bashrc && \
+    echo 'conda activate base' >> .bashrc
 
 # ----------------------------------------
 # prepare project folder, ready to mount
