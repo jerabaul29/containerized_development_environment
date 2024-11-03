@@ -14,6 +14,7 @@ LABEL description="A container packing a full helix-based development environmen
 # require to build with flag `--build-arg GIT_HASH="$(git rev-parse HEAD)"`
 ARG GIT_HASH="0"
 LABEL GIT_HASH=$GIT_HASH
+ENV GIT_HASH=$GIT_HASH
 
 # ------------------------------------------------------------
 # all root operations (apt install etc)
