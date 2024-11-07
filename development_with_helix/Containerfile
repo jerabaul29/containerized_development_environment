@@ -74,6 +74,7 @@ RUN \
     # set up helix config
     mkdir -p /home/ubuntu/.config/helix/ && cp /home/ubuntu/config_scripts_snippets/configs/helix/config.toml /home/ubuntu/.config/helix/config.toml && \
     # TODO: install hj, zg, zx, hg, hx, etc
+    # TODO: add alias p for python3
     # install fzf
     git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf && \
     ~/.fzf/install && \
@@ -99,6 +100,11 @@ RUN echo 'alias hlx="/home/ubuntu/Software/helix/squashfs-root/AppRun"' >> .bash
 WORKDIR /home/ubuntu/host_mountpoint
 # this has to be mounted by the container user, using the argument
 # `--volume PATH_ON_HOST:/home/ubuntu/host_mountpoint `
+
+# ----------------------------------------
+# TODO: share the conda env packages across runs by mounting "conda env content" part?
+# this may not require anything on the side of the container?
+# TODO: share the history across container restarts? simply mount the folder / files with the corresponding files?
 
 # ----------------------------------------
 # default command is to get a shell with bashrc loaded
