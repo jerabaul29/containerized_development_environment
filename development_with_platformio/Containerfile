@@ -1,0 +1,81 @@
+FROM ubuntu:24.04
+
+# TODO: for now, cannot run a GUI app in podman... try from the fedora base image?
+# TODO: try: https://discussion.fedoraproject.org/t/how-to-run-a-gui-app-in-a-podman-container/72970/7
+# TODO: try:
+# https://forums.opensuse.org/t/docker-or-podman-for-running-gui-application/143758/19
+
+# ------------------------------------------------------------
+# general metadata about the container
+
+# hard coded args
+LABEL author="J Rabault"
+LABEL ContainerfileLocation="TODO"
+LABEL kind="commandline_application"
+LABEL version="0.1"
+LABEL description="A container packing a full platformio-based development environment."
+
+# automatically grabbed hash
+# require to build with flag `--build-arg GIT_HASH="$(git rev-parse HEAD)"`
+ARG GIT_HASH="0"
+LABEL GIT_HASH=$GIT_HASH
+ENV GIT_HASH=$GIT_HASH
+
+ARG POSIX_TIMESTAMP_CREATION="0"
+LABEL POSIX_TIMESTAMP_CREATION=$POSIX_TIMESTAMP_CREATION
+ENV POSIX_TIMESTAMP_CREATION=$POSIX_TIMESTAMP_CREATION
+
+# ------------------------------------------------------------
+# all root operations (apt install etc)
+
+USER root
+
+# make sure to use full true colors
+ENV TERM xterm-256color
+ENV COLORTERM truecolor
+
+# all sudo apt operations in one go; update cache, install, purge cache
+RUN apt-get update && apt-get install -y \
+    # needed for GUI applications
+    xauth \
+    xorg \
+    # needed by vsc
+    dbus \
+    # needed to add MS key
+    gpg \
+    # my usual utils...
+    wget \
+    git \
+    tmux \
+    htop \
+    tree \
+    && rm -rf /var/lib/apt/lists/*
+
+# install VSC
+
+WORKDIR /home/root/Software/VSC
+
+RUN echo "code code/add-microsoft-repo boolean true" | debconf-set-selections
+
+RUN wget "https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64" -O code.deb && \
+    apt update && apt install -y ./code.deb
+
+# ------------------------------------------------------------
+# all user level operations
+
+RUN useradd platformio_ubuntu
+USER platformio_ubuntu
+
+# make sure to use full true colors
+ENV TERM xterm-256color
+ENV COLORTERM truecolor
+
+WORKDIR /home/platformio_ubuntu
+
+# ----------------------------------------
+# default command is to get a shell
+
+# TODO: load bashrc etc
+
+CMD /bin/bash -c 'if (( "$(date +%s)" > $((POSIX_TIMESTAMP_CREATION+604800)) )); then read -p "WARNING; the container is built for more than 7 days ago; consider re-building! press ENTER to continue"; fi' && \
+    /bin/bash

@@ -16,6 +16,11 @@ ARG GIT_HASH="0"
 LABEL GIT_HASH=$GIT_HASH
 ENV GIT_HASH=$GIT_HASH
 
+# TODO: document required flag
+ARG POSIX_TIMESTAMP_CREATION="0"
+LABEL POSIX_TIMESTAMP_CREATION=$POSIX_TIMESTAMP_CREATION
+ENV POSIX_TIMESTAMP_CREATION=$POSIX_TIMESTAMP_CREATION
+
 # ------------------------------------------------------------
 # all root operations (apt install etc)
 
@@ -39,6 +44,7 @@ RUN apt-get update && apt-get install -y \
 # ------------------------------------------------------------
 # all user level operations
 
+# TODO: weird that this works, but in other containers this does not work; rather useradd a username that will likely not exist otherwise, and stick to this user?
 USER ubuntu
 
 # make sure to use full true colors
@@ -110,10 +116,6 @@ WORKDIR /home/ubuntu/host_mountpoint
 # default command is to get a shell with bashrc loaded
 # at the host mountpoint location, so this can start to
 # be edited
-
-ARG POSIX_TIMESTAMP_CREATION="0"
-LABEL POSIX_TIMESTAMP_CREATION=$POSIX_TIMESTAMP_CREATION
-ENV POSIX_TIMESTAMP_CREATION=$POSIX_TIMESTAMP_CREATION
 
 # TODO: have this as an own script, and just call the script; this way can be arbitrarily complex without issue
 CMD /bin/bash -c 'if (( "$(date +%s)" > $((POSIX_TIMESTAMP_CREATION+604800)) )); then read -p "WARNING; the container is built for more than 7 days ago; consider re-building! press ENTER to continue"; fi' && \
