@@ -122,4 +122,5 @@ CMD /bin/bash -c 'if (( "$(date +%s)" > $((POSIX_TIMESTAMP_CREATION+604800)) ));
 # TODO: run the correct instance of hj if relevant
 # TODO: if relevant volume arg provided, activate the provided conda env from the user domain while mounting the folder
 # TODO: check that can use matplotlib figures etc
+# TODO: default code inside container in conda to allow static code analysis and exploration of projects in python and rust and cpp; but make it easy to mount an external conda if necessary
 
