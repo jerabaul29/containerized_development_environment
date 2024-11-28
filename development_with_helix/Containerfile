@@ -73,7 +73,7 @@ RUN \
     git clone https://github.com/jerabaul29/config_scripts_snippets.git --depth=1 && \
     # set up helix config
     mkdir -p /home/ubuntu/.config/helix/ && cp /home/ubuntu/config_scripts_snippets/configs/helix/config.toml /home/ubuntu/.config/helix/config.toml && \
-    # TODO: install hj, zg, zx, hg, hx, etc
+    # TODO: install hj, zg, zx, hg, hx, ga, etc
     # TODO: add alias p for python3
     # install fzf
     git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf && \
@@ -115,7 +115,11 @@ ARG POSIX_TIMESTAMP_CREATION="0"
 LABEL POSIX_TIMESTAMP_CREATION=$POSIX_TIMESTAMP_CREATION
 ENV POSIX_TIMESTAMP_CREATION=$POSIX_TIMESTAMP_CREATION
 
+# TODO: have this as an own script, and just call the script; this way can be arbitrarily complex without issue
 CMD /bin/bash -c 'if (( "$(date +%s)" > $((POSIX_TIMESTAMP_CREATION+604800)) )); then read -p "WARNING; the container is built for more than 7 days ago; consider re-building! press ENTER to continue"; fi' && \
     /bin/bash --init-file /home/ubuntu/.bashrc
 
 # TODO: run the correct instance of hj if relevant
+# TODO: if relevant volume arg provided, activate the provided conda env from the user domain while mounting the folder
+# TODO: check that can use matplotlib figures etc
+
