@@ -16,7 +16,8 @@ ARG GIT_HASH="0"
 LABEL GIT_HASH=$GIT_HASH
 ENV GIT_HASH=$GIT_HASH
 
-# TODO: document required flag
+# automatically grabbed posix creation time
+# require to build with flag `-build-arg POSIX_TIMESTAMP_CREATION="$(date +%s)"`
 ARG POSIX_TIMESTAMP_CREATION="0"
 LABEL POSIX_TIMESTAMP_CREATION=$POSIX_TIMESTAMP_CREATION
 ENV POSIX_TIMESTAMP_CREATION=$POSIX_TIMESTAMP_CREATION
@@ -41,11 +42,17 @@ RUN apt-get update && apt-get install -y \
     tree \
     && rm -rf /var/lib/apt/lists/*
 
+# prepare default user and set default shell
+# TODO: is that enough for tmux to invoke /bin/bash? does tmux need any more magics or similar?
+RUN useradd helix_ubuntu
+RUN usermod -s /bin/bash helix_ubuntu
+
+# TODO: make sure all new terminals source the .bashrc for helix_ubuntu
+
 # ------------------------------------------------------------
 # all user level operations
 
-# TODO: weird that this works, but in other containers this does not work; rather useradd a username that will likely not exist otherwise, and stick to this user?
-USER ubuntu
+USER helix_ubuntu
 
 # make sure to use full true colors
 ENV TERM xterm-256color
@@ -54,15 +61,15 @@ ENV COLORTERM truecolor
 # ----------------------------------------
 # installation of conda
 
-WORKDIR /home/ubuntu/Software/conda
+WORKDIR /home/helix_ubuntu/Software/conda
 
 RUN wget "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" && \
-    bash Miniforge3-$(uname)-$(uname -m).sh -b -p /home/ubuntu/Software/conda/miniconda
+    bash Miniforge3-$(uname)-$(uname -m).sh -b -p /home/helix_ubuntu/Software/conda/miniconda
 
 # ----------------------------------------
 # installation of helix
 
-WORKDIR /home/ubuntu/Software/helix
+WORKDIR /home/helix_ubuntu/Software/helix
 
 RUN wget --https-only https://github.com/helix-editor/helix/releases/download/24.07/helix-24.07-x86_64.AppImage && \
     chmod +x helix-24.07-x86_64.AppImage && \
@@ -72,40 +79,42 @@ RUN wget --https-only https://github.com/helix-editor/helix/releases/download/24
 # ----------------------------------------
 # cloning of relevant configurations and add ons
 
-WORKDIR /home/ubuntu
+WORKDIR /home/helix_ubuntu
 
 RUN \
     # my configs
     git clone https://github.com/jerabaul29/config_scripts_snippets.git --depth=1 && \
     # set up helix config
-    mkdir -p /home/ubuntu/.config/helix/ && cp /home/ubuntu/config_scripts_snippets/configs/helix/config.toml /home/ubuntu/.config/helix/config.toml && \
-    # TODO: install hj, zg, zx, hg, hx, ga, etc
-    # TODO: add alias p for python3
+    mkdir -p /home/helix_ubuntu/.config/helix/ && cp /home/helix_ubuntu/config_scripts_snippets/configs/helix/config.toml /home/helix_ubuntu/.config/helix/config.toml && \
     # install fzf
     git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf && \
     ~/.fzf/install && \
     # nice tmux conf
-    git clone https://github.com/gpakosz/.tmux.git /home/ubuntu/.tmux --depth=1 && \
+    git clone https://github.com/gpakosz/.tmux.git /home/helix_ubuntu/.tmux --depth=1 && \
     ln -s -f .tmux/.tmux.conf && \
     cp config_scripts_snippets/configs/tmux/.tmux.conf.local . && \
     # nice prompt also in git repos
-    git clone https://github.com/magicmonty/bash-git-prompt.git /home/ubuntu/.bash-git-prompt --depth=1 && \
+    git clone https://github.com/magicmonty/bash-git-prompt.git /home/helix_ubuntu/.bash-git-prompt --depth=1 && \
     echo "if [ -f "$HOME/.bash-git-prompt/gitprompt.sh" ]; then\nGIT_PROMPT_ONLY_IN_REPO=0\nGIT_PROMPT_THEME=Single_line_Dark\nsource $HOME/.bash-git-prompt/gitprompt.sh\nfi" >> .bashrc
 
 # ----------------------------------------
 # setup of bashrc
 
-WORKDIR /home/ubuntu
-RUN echo 'alias hlx="/home/ubuntu/Software/helix/squashfs-root/AppRun"' >> .bashrc && \
-    echo 'source /home/ubuntu/Software/conda/miniconda/etc/profile.d/conda.sh' >> .bashrc && \
+# TODO: install zg, zx, hg, hx, ga, etc
+# TODO: add alias p for python3
+
+WORKDIR /home/helix_ubuntu
+RUN echo 'alias hlx="/home/helix_ubuntu/Software/helix/squashfs-root/AppRun"' >> .bashrc && \
+    echo 'alias hj="/home/helix_ubuntu/config_scripts_snippets/scripts/helix_and_repl/helix_and_repl.sh"' >> .bashrc && \
+    echo 'source /home/helix_ubuntu/Software/conda/miniconda/etc/profile.d/conda.sh' >> .bashrc && \
     echo 'conda activate base' >> .bashrc
 
 # ----------------------------------------
 # prepare project folder, ready to mount
 
-WORKDIR /home/ubuntu/host_mountpoint
+WORKDIR /home/helix_ubuntu/host_mountpoint
 # this has to be mounted by the container user, using the argument
-# `--volume PATH_ON_HOST:/home/ubuntu/host_mountpoint `
+# `--volume PATH_ON_HOST:/home/helix_ubuntu/host_mountpoint `
 
 # ----------------------------------------
 # TODO: share the conda env packages across runs by mounting "conda env content" part?
@@ -119,7 +128,7 @@ WORKDIR /home/ubuntu/host_mountpoint
 
 # TODO: have this as an own script, and just call the script; this way can be arbitrarily complex without issue
 CMD /bin/bash -c 'if (( "$(date +%s)" > $((POSIX_TIMESTAMP_CREATION+604800)) )); then read -p "WARNING; the container is built for more than 7 days ago; consider re-building! press ENTER to continue"; fi' && \
-    /bin/bash --init-file /home/ubuntu/.bashrc
+    /bin/bash --init-file /home/helix_ubuntu/.bashrc
 
 # TODO: run the correct instance of hj if relevant
 # TODO: if relevant volume arg provided, activate the provided conda env from the user domain while mounting the folder

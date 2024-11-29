@@ -7,7 +7,7 @@
 - run interactively:
 
 `podman run -ti --rm --hostname contdev localhost/helix:latest`
-`podman run -ti --rm --volume /home/jeanr/Desktop/Current/test_container/:/home/ubuntu/host_mountpoint:Z,U --hostname contdev localhost/helix:latest`
+`podman run -ti --rm --volume /home/jeanr/Desktop/Current/test_container/:/home/helix_ubuntu/host_mountpoint:Z,U --hostname contdev localhost/helix:latest`
 
 - prune:
 
