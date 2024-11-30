@@ -81,6 +81,9 @@ RUN wget --https-only https://github.com/helix-editor/helix/releases/download/24
 
 WORKDIR /home/helix_ubuntu
 
+# make sure to set the user .profile, so that e.g. /bin/bash loads .bashrc, user binaries are loaded, etc
+COPY profile_content /home/helix_ubuntu/.profile
+
 RUN \
     # my configs
     git clone https://github.com/jerabaul29/config_scripts_snippets.git --depth=1 && \
