@@ -43,11 +43,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # prepare default user and set default shell
-# TODO: is that enough for tmux to invoke /bin/bash? does tmux need any more magics or similar?
 RUN useradd helix_ubuntu
 RUN usermod -s /bin/bash helix_ubuntu
-
-# TODO: make sure all new terminals source the .bashrc for helix_ubuntu
 
 # ------------------------------------------------------------
 # all user level operations
@@ -106,6 +103,16 @@ RUN \
 # TODO: install zg, zx, hg, hx, ga, etc
 # TODO: add alias p for python3
 
+# TODO: custom hj version?
+# TODO: only enable conda if relevant; load the default conda environment
+# TODO: both based on env variables or command line arguments?
+# hj ENV FILE
+# ENV:
+# - name
+# - path
+# - NONE
+# - no arg
+
 WORKDIR /home/helix_ubuntu
 RUN echo 'alias hlx="/home/helix_ubuntu/Software/helix/squashfs-root/AppRun"' >> .bashrc && \
     echo 'alias hj="/home/helix_ubuntu/config_scripts_snippets/scripts/helix_and_repl/helix_and_repl.sh"' >> .bashrc && \
@@ -113,11 +120,18 @@ RUN echo 'alias hlx="/home/helix_ubuntu/Software/helix/squashfs-root/AppRun"' >>
     echo 'conda activate base' >> .bashrc
 
 # ----------------------------------------
+# prepare the external conda env folder, ready to mount
+
+# this volume has to be mounted by the container user, using the argument
+# `--volume PATH_ON_HOST:/home/helix_ubuntu/host_mountpoint_conda_env`
+WORKDIR /home/helix_ubuntu/host_mountpoint_conda_env
+
+# ----------------------------------------
 # prepare project folder, ready to mount
 
-WORKDIR /home/helix_ubuntu/host_mountpoint
 # this has to be mounted by the container user, using the argument
-# `--volume PATH_ON_HOST:/home/helix_ubuntu/host_mountpoint `
+# `--volume PATH_ON_HOST:/home/helix_ubuntu/host_mountpoint_project`
+WORKDIR /home/helix_ubuntu/host_mountpoint_project
 
 # ----------------------------------------
 # TODO: share the conda env packages across runs by mounting "conda env content" part?
