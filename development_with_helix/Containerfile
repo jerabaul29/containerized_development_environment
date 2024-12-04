@@ -96,7 +96,14 @@ RUN wget --https-only https://github.com/helix-editor/helix/releases/download/24
 WORKDIR /home/helix_ubuntu
 
 # make sure to set the user .profile, so that e.g. /bin/bash loads .bashrc, user binaries are loaded, etc
-COPY profile_content /home/helix_ubuntu/.profile
+# NOTE: copy always copies as root by default, even though the USER is set otherwise...
+COPY --chown=helix_ubuntu:helix_ubuntu profile_content /home/helix_ubuntu/.profile
+
+# copy the bashrc
+# TODO: avoid using echo, just put everything in it directly; for this, go through all the following and clean up
+# TODO: fix lints from the bash lsp
+# NOTE: copy always copies as root by default, even though the USER is set otherwise...
+COPY --chown=helix_ubuntu:helix_ubuntu  bashrc /home/helix_ubuntu/.bashrc
 
 RUN \
     # my configs
@@ -131,6 +138,7 @@ RUN \
 # - no arg
 
 WORKDIR /home/helix_ubuntu
+# TODO: have the bashrc as a separate file and copy it instead
 RUN echo 'alias hlx="/home/helix_ubuntu/Software/helix/squashfs-root/AppRun"' >> .bashrc && \
     echo 'alias hj="/home/helix_ubuntu/config_scripts_snippets/scripts/helix_and_repl/helix_and_repl.sh"' >> .bashrc && \
     echo 'source /home/helix_ubuntu/Software/conda/miniconda/etc/profile.d/conda.sh' >> .bashrc && \
