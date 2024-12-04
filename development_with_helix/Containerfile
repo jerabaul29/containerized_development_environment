@@ -40,7 +40,24 @@ RUN apt-get update && apt-get install -y \
     tmux \
     htop \
     tree \
+    # support user applications, helix etc and necessary tooling to install lsps
+    # in particular, we support LSPs for bash, python, cpp, rust
+    # this requires quite a bit of tooling...
+    golang \
+    nodejs \
+    npm \
+    shellcheck \
     && rm -rf /var/lib/apt/lists/*
+
+# support bash lsp in helix
+RUN go install mvdan.cc/sh/v3/cmd/shfmt@latest
+RUN npm i -g bash-language-server
+
+# TODO: support rust lsp in helix
+
+# TODO: support python lsp in helix
+
+# TODO: support cpp lsp in helix
 
 # prepare default user and set default shell
 RUN useradd helix_ubuntu
