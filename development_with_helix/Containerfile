@@ -27,9 +27,15 @@ ENV POSIX_TIMESTAMP_CREATION=$POSIX_TIMESTAMP_CREATION
 
 USER root
 
+# ----------------------------------------
+
 # make sure to use full true colors
 ENV TERM xterm-256color
 ENV COLORTERM truecolor
+
+# ----------------------------------------
+
+# TODO: github cli
 
 # all sudo apt operations in one go; update cache, install, purge cache
 RUN apt-get update && apt-get install -y \
@@ -47,7 +53,17 @@ RUN apt-get update && apt-get install -y \
     nodejs \
     npm \
     shellcheck \
+    curl \
+    # NOTE: this only installs tooling, not rust itself; need
+    # 'RUN rustup default stable'
+    # in addition for each user who wants to use cargo / rustc etc
+    rustup \
     && rm -rf /var/lib/apt/lists/*
+
+# ----------------------------------------
+# LSPs for supporting languages that must be installed by root
+
+# TODO: check what should be installed here vs for the user
 
 # support bash lsp in helix
 RUN go install mvdan.cc/sh/v3/cmd/shfmt@latest
@@ -59,6 +75,10 @@ RUN npm i -g bash-language-server
 
 # TODO: support cpp lsp in helix
 
+# ----------------------------------------
+# LSPs with general properties that must be installed by root
+
+# ------------------------------------------------------------
 # prepare default user and set default shell
 RUN useradd helix_ubuntu
 RUN usermod -s /bin/bash helix_ubuntu
@@ -71,6 +91,16 @@ USER helix_ubuntu
 # make sure to use full true colors
 ENV TERM xterm-256color
 ENV COLORTERM truecolor
+
+WORKDIR /home/helix_ubuntu
+
+# make sure to set the user .profile, so that e.g. /bin/bash loads .bashrc, user binaries are loaded, etc
+# NOTE: copy always copies as root by default, even though the USER is set otherwise...
+COPY --chown=helix_ubuntu:helix_ubuntu profile_content /home/helix_ubuntu/.profile
+
+# copy the bashrc
+# NOTE: copy always copies as root by default, even though the USER is set otherwise...
+COPY --chown=helix_ubuntu:helix_ubuntu  bashrc /home/helix_ubuntu/.bashrc
 
 # ----------------------------------------
 # installation of conda
@@ -85,25 +115,32 @@ RUN wget "https://github.com/conda-forge/miniforge/releases/latest/download/Mini
 
 WORKDIR /home/helix_ubuntu/Software/helix
 
-RUN wget --https-only https://github.com/helix-editor/helix/releases/download/24.07/helix-24.07-x86_64.AppImage && \
-    chmod +x helix-24.07-x86_64.AppImage && \
+RUN wget --https-only https://github.com/helix-editor/helix/releases/download/25.01/helix-25.01-x86_64.AppImage && \
+    chmod +x helix-25.01-x86_64.AppImage && \
     # for some reason, appimages cannot be just run within podman containers - need to extract and then run the executable
-    ./helix-24.07-x86_64.AppImage --appimage-extract
+    ./helix-25.01-x86_64.AppImage --appimage-extract
+
+# ----------------------------------------
+# installation of rust and rust-based lsps etc
+
+WORKDIR /home/helix_ubuntu
+
+RUN rustup default stable && \
+    cargo install --git https://github.com/estin/simple-completion-language-server.git && \
+    # harper natural text LSP
+    cargo install harper-ls --locked
+
+# NOTE: this does not work...
+# ENV PATH "$HOME/.cargo/bin:$PATH"
+# TODO: check harper works now
+
+# TODO: typos-lsp
+# TODO: install snippets
 
 # ----------------------------------------
 # cloning of relevant configurations and add ons
 
 WORKDIR /home/helix_ubuntu
-
-# make sure to set the user .profile, so that e.g. /bin/bash loads .bashrc, user binaries are loaded, etc
-# NOTE: copy always copies as root by default, even though the USER is set otherwise...
-COPY --chown=helix_ubuntu:helix_ubuntu profile_content /home/helix_ubuntu/.profile
-
-# copy the bashrc
-# TODO: avoid using echo, just put everything in it directly; for this, go through all the following and clean up
-# TODO: fix lints from the bash lsp
-# NOTE: copy always copies as root by default, even though the USER is set otherwise...
-COPY --chown=helix_ubuntu:helix_ubuntu  bashrc /home/helix_ubuntu/.bashrc
 
 RUN \
     # my configs
@@ -118,11 +155,7 @@ RUN \
     ln -s -f .tmux/.tmux.conf && \
     cp config_scripts_snippets/configs/tmux/.tmux.conf.local . && \
     # nice prompt also in git repos
-    git clone https://github.com/magicmonty/bash-git-prompt.git /home/helix_ubuntu/.bash-git-prompt --depth=1 && \
-    echo "if [ -f "$HOME/.bash-git-prompt/gitprompt.sh" ]; then\nGIT_PROMPT_ONLY_IN_REPO=0\nGIT_PROMPT_THEME=Single_line_Dark\nsource $HOME/.bash-git-prompt/gitprompt.sh\nfi" >> .bashrc
-
-# ----------------------------------------
-# setup of bashrc
+    git clone https://github.com/magicmonty/bash-git-prompt.git /home/helix_ubuntu/.bash-git-prompt --depth=1
 
 # TODO: install zg, zx, hg, hx, ga, etc
 # TODO: add alias p for python3
@@ -136,13 +169,6 @@ RUN \
 # - path
 # - NONE
 # - no arg
-
-WORKDIR /home/helix_ubuntu
-# TODO: have the bashrc as a separate file and copy it instead
-RUN echo 'alias hlx="/home/helix_ubuntu/Software/helix/squashfs-root/AppRun"' >> .bashrc && \
-    echo 'alias hj="/home/helix_ubuntu/config_scripts_snippets/scripts/helix_and_repl/helix_and_repl.sh"' >> .bashrc && \
-    echo 'source /home/helix_ubuntu/Software/conda/miniconda/etc/profile.d/conda.sh' >> .bashrc && \
-    echo 'conda activate base' >> .bashrc
 
 # ----------------------------------------
 # prepare the external conda env folder, ready to mount

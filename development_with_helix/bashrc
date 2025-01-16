@@ -116,3 +116,15 @@ if ! shopt -oq posix; then
   fi
 fi
 
+if [ -f "$HOME/.bash-git-prompt/gitprompt.sh" ]; then
+  GIT_PROMPT_ONLY_IN_REPO=0
+  GIT_PROMPT_THEME=Single_line_Dark
+  source $HOME/.bash-git-prompt/gitprompt.sh
+fi
+
+alias hlx="/home/helix_ubuntu/Software/helix/squashfs-root/AppRun"
+alias hj="/home/helix_ubuntu/config_scripts_snippets/scripts/helix_and_repl/helix_and_repl.sh"
+source /home/helix_ubuntu/Software/conda/miniconda/etc/profile.d/conda.sh
+conda activate base
+PATH="$PATH:$HOME/.cargo/bin"
+

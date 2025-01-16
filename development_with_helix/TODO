@@ -1,0 +1,2 @@
+- split the Containerfile in several steps and import from each others; this will go much faster
+- add languages.toml to my config and add it to the ~/.config/helix/languages.toml
