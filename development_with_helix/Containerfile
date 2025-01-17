@@ -146,7 +146,11 @@ RUN \
     # my configs
     git clone https://github.com/jerabaul29/config_scripts_snippets.git --depth=1 && \
     # set up helix config
-    mkdir -p /home/helix_ubuntu/.config/helix/ && cp /home/helix_ubuntu/config_scripts_snippets/configs/helix/config.toml /home/helix_ubuntu/.config/helix/config.toml && \
+    mkdir -p /home/helix_ubuntu/.config/helix/ && \
+    cp /home/helix_ubuntu/config_scripts_snippets/configs/helix/config.toml /home/helix_ubuntu/.config/helix/config.toml && \
+    cp /home/helix_ubuntu/config_scripts_snippets/configs/helix/languages.toml /home/helix_ubuntu/.config/helix/languages.toml && \
+    # TODO: add snippets by copy pasting to the location of ~/.config/helix/snippets/LANG.toml
+    # TODO: add default dict system wide for harper-ls and similar: pdf; crrt; etc
     # install fzf
     git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf && \
     ~/.fzf/install && \
