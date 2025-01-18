@@ -54,6 +54,7 @@ RUN apt-get update && apt-get install -y \
     npm \
     shellcheck \
     curl \
+    zip \
     # NOTE: this only installs tooling, not rust itself; need
     # 'RUN rustup default stable'
     # in addition for each user who wants to use cargo / rustc etc
@@ -68,6 +69,12 @@ RUN apt-get update && apt-get install -y \
 # support bash lsp in helix
 RUN go install mvdan.cc/sh/v3/cmd/shfmt@latest
 RUN npm i -g bash-language-server
+
+# support for spellchecking with cspell
+RUN npm install -g git+https://github.com/streetsidesoftware/cspell-cli
+
+# support for cspell
+RUN npm install -g git+https://github.com/streetsidesoftware/cspell-cli
 
 # TODO: support rust lsp in helix
 
@@ -94,6 +101,8 @@ ENV COLORTERM truecolor
 
 WORKDIR /home/helix_ubuntu
 
+RUN mkdir /home/helix_ubuntu/bin/
+
 # make sure to set the user .profile, so that e.g. /bin/bash loads .bashrc, user binaries are loaded, etc
 # NOTE: copy always copies as root by default, even though the USER is set otherwise...
 COPY --chown=helix_ubuntu:helix_ubuntu profile_content /home/helix_ubuntu/.profile
@@ -119,6 +128,20 @@ RUN wget --https-only https://github.com/helix-editor/helix/releases/download/25
     chmod +x helix-25.01-x86_64.AppImage && \
     # for some reason, appimages cannot be just run within podman containers - need to extract and then run the executable
     ./helix-25.01-x86_64.AppImage --appimage-extract
+
+# ----------------------------------------
+# installation of cspell
+
+WORKDIR /home/helix_ubuntu/Software/
+
+RUN curl -fsSL https://bun.sh/install | bash && \
+    git clone https://github.com/vlabo/cspell-lsp.git
+
+WORKDIR /home/helix_ubuntu/Software/cspell-lsp/
+
+RUN npm install && \
+    ~/.bun/bin/bun build ./main.ts --compile --outfile cspell-lsp && \
+    cp cspell-lsp /home/helix_ubuntu/bin/.
 
 # ----------------------------------------
 # installation of rust and rust-based lsps etc

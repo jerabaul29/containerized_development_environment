@@ -127,4 +127,5 @@ alias hj="/home/helix_ubuntu/config_scripts_snippets/scripts/helix_and_repl/heli
 source /home/helix_ubuntu/Software/conda/miniconda/etc/profile.d/conda.sh
 conda activate base
 PATH="$PATH:$HOME/.cargo/bin"
+PATH="$PATH:$HOME/bin"
 
