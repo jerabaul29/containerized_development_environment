@@ -135,7 +135,6 @@ RUN rustup default stable && \
 # TODO: check harper works now
 
 # TODO: typos-lsp
-# TODO: install snippets
 
 # ----------------------------------------
 # cloning of relevant configurations and add ons
@@ -147,9 +146,13 @@ RUN \
     git clone https://github.com/jerabaul29/config_scripts_snippets.git --depth=1 && \
     # set up helix config
     mkdir -p /home/helix_ubuntu/.config/helix/ && \
+    mkdir -p /home/helix_ubuntu/.config/helix/snippets && \
     cp /home/helix_ubuntu/config_scripts_snippets/configs/helix/config.toml /home/helix_ubuntu/.config/helix/config.toml && \
     cp /home/helix_ubuntu/config_scripts_snippets/configs/helix/languages.toml /home/helix_ubuntu/.config/helix/languages.toml && \
-    # TODO: add snippets by copy pasting to the location of ~/.config/helix/snippets/LANG.toml
+    cp /home/helix_ubuntu/config_scripts_snippets/completion_snippets/*.toml /home/helix_ubuntu/.config/helix/snippets/. && \
+    # set up harper config
+    mkdir -p /home/helix_ubuntu/.config/harper-ls && \
+    cp /home/helix_ubuntu/config_scripts_snippets/configs/harper-ls/dictionary.txt /home/helix_ubuntu/.config/harper-ls/. && \
     # TODO: add default dict system wide for harper-ls and similar: pdf; crrt; etc
     # install fzf
     git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf && \
@@ -189,6 +192,11 @@ WORKDIR /home/helix_ubuntu/host_mountpoint_conda_env
 WORKDIR /home/helix_ubuntu/host_mountpoint_project
 
 # ----------------------------------------
+# set up the default conda env
+
+# TODO: use the host externally mounted conda env instead?
+RUN . /home/helix_ubuntu/Software/conda/miniconda/etc/profile.d/conda.sh && \
+    conda create -y --name dev numpy scipy matplotlib ipython 
 # TODO: share the conda env packages across runs by mounting "conda env content" part?
 # this may not require anything on the side of the container?
 # TODO: share the history across container restarts? simply mount the folder / files with the corresponding files?
