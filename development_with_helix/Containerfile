@@ -219,7 +219,13 @@ WORKDIR /home/helix_ubuntu/host_mountpoint_project
 
 # TODO: use the host externally mounted conda env instead?
 RUN . /home/helix_ubuntu/Software/conda/miniconda/etc/profile.d/conda.sh && \
-    conda create -y --name dev numpy scipy matplotlib ipython 
+    conda create -y --name dev numpy scipy matplotlib pandas xarray ipython && \
+    conda activate dev && \
+    pip install jedi && \
+    pip install "python-lsp-server[all]" && \
+    pip install ruff && \
+    pip install jedi-language-server
+
 # TODO: share the conda env packages across runs by mounting "conda env content" part?
 # this may not require anything on the side of the container?
 # TODO: share the history across container restarts? simply mount the folder / files with the corresponding files?
