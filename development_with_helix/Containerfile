@@ -4,7 +4,7 @@ FROM ubuntu:24.04
 # general metadata about the container
 
 # hard coded args
-LABEL author="J Rabault"
+LABEL author="jerabaul29"
 LABEL ContainerfileLocation="https://github.com/jerabaul29/containerized_development_environment/tree/main/development_with_helix"
 LABEL kind="commandline_application"
 LABEL version="0.1"
@@ -237,4 +237,6 @@ CMD /bin/bash -c 'if (( "$(date +%s)" > $((POSIX_TIMESTAMP_CREATION+604800)) ));
 # TODO: if relevant volume arg provided, activate the provided conda env from the user domain while mounting the folder
 # TODO: check that can use matplotlib figures etc
 # TODO: default code inside container in conda to allow static code analysis and exploration of projects in python and rust and cpp; but make it easy to mount an external conda if necessary
+
+# TODO: consistently move / symlink binaries to ~/bin instead of adding far too many paths
 
